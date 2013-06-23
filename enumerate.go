@@ -60,6 +60,10 @@ func EnumerateResults(pos, neg []float64) []Result {
 		fp := len(neg) - tn
 		results = append(results, Result{tp, tn, fp, fn})
 	}
+	// Reverse list.
+	for i, j := 0, len(results)-1; i < j; i, j = i+1, j-1 {
+		results[i], results[j] = results[j], results[i]
+	}
 	return results
 }
 

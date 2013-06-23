@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/jackvalmadre/go-ml"
 	"log"
+	"math"
 	"os"
 	"strconv"
 )
@@ -47,10 +48,21 @@ func main() {
 		log.Fatalln(err)
 	}
 	defer file.Close()
-	fmt.Fprintln(file, "TP\tTN\tFP\tFN")
-	for _, r := range results {
-		fmt.Fprintf(file, "%d\t%d\t%d\t%d\n", r.TP, r.TN, r.FP, r.FN)
+	fmt.Fprintln(file, "Recall\tPrecision")
+	var ap float64
+	var prev float64
+	for _, c := range results {
+		p := c.Precision()
+		if math.IsNaN(p) {
+			continue
+		}
+		r := c.Recall()
+		dr := r - prev
+		ap += p * dr
+		fmt.Fprintf(file, "%g\t%g\n", r, p)
+		prev = r
 	}
+	fmt.Println("Average Precision:", ap)
 }
 
 func readScores(filename string) ([]float64, error) {
