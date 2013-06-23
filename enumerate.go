@@ -40,29 +40,28 @@ func EnumerateResults(pos, neg []float64) []Result {
 	for _, score := range neg {
 		examples = append(examples, Example{false, score})
 	}
-	sort.Sort(ByScore(examples))
+	// Sort from highest score to lowest.
+	sort.Sort(sort.Reverse(ByScore(examples)))
 
 	var results []Result
-	// Positives incorrectly classified as negative.
-	fn := 0
-	for n := 0; n <= len(examples); n++ {
-		if n > 0 {
-			// As threshold moves up, false negatives occur.
-			if examples[n-1].Positive {
-				fn++
+	// Positives correctly classified as positive.
+	tp := 0
+	// Start with everything classified as negative (zero recall).
+	for p := 0; p <= len(examples); p++ {
+		if p > 0 {
+			// As threshold is lowered, positives occur.
+			// Check if new positive is correctly classified.
+			if examples[p-1].Positive {
+				tp++
 			}
 		}
-		// Negatives correctly classified as negative.
-		tn := n - fn
-		// Positives correctly classified as positive.
-		tp := len(pos) - fn
 		// Negatives incorrectly classified as positive.
-		fp := len(neg) - tn
+		fp := p - tp
+		// Positives incorrectly classified as negative.
+		fn := len(pos) - tp
+		// Negatives correctly classified as negative.
+		tn := len(neg) - fp
 		results = append(results, Result{tp, tn, fp, fn})
-	}
-	// Reverse list.
-	for i, j := 0, len(results)-1; i < j; i, j = i+1, j-1 {
-		results[i], results[j] = results[j], results[i]
 	}
 	return results
 }
