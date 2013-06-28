@@ -1,6 +1,9 @@
 package ml
 
-import "sort"
+import (
+	"math"
+	"sort"
+)
 
 // Binary classification result.
 type Result struct {
@@ -25,13 +28,15 @@ func (r Result) Accuracy() float64 {
 	return float64(r.TP+r.TN) / float64(r.TP+r.TN+r.FP+r.FN)
 }
 
+type ResultSet []Result
+
 // Associates a labelled example with a score.
 type Example struct {
 	Positive bool
 	Score    float64
 }
 
-func EnumerateResults(pos, neg []float64) []Result {
+func EnumerateResults(pos, neg []float64) ResultSet {
 	// Merge scores.
 	var examples []Example
 	for _, score := range pos {
@@ -64,6 +69,22 @@ func EnumerateResults(pos, neg []float64) []Result {
 		results = append(results, Result{tp, tn, fp, fn})
 	}
 	return results
+}
+
+func (results ResultSet) AveragePrecision() float64 {
+	var ap float64
+	var prev float64
+	for _, c := range results {
+		p := c.Precision()
+		if math.IsNaN(p) {
+			continue
+		}
+		r := c.Recall()
+		dr := r - prev
+		ap += p * dr
+		prev = r
+	}
+	return ap
 }
 
 type ByScore []Example
