@@ -36,6 +36,7 @@ type Example struct {
 	Score    float64
 }
 
+// Inputs need not be sorted.
 func EnumerateResults(pos, neg []float64) ResultSet {
 	// Merge scores.
 	var examples []Example
